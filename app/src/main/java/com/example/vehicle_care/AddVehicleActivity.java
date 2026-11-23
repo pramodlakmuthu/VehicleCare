@@ -1,6 +1,5 @@
 
 package com.example.vehicle_care;
-
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -16,6 +15,8 @@ public class AddVehicleActivity extends AppCompatActivity {
     Spinner spFuelType;
     Button btnSaveVehicle;
 
+    DatabaseHelper databaseHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +29,8 @@ public class AddVehicleActivity extends AppCompatActivity {
 
         spFuelType = findViewById(R.id.spFuelType);
         btnSaveVehicle = findViewById(R.id.btnSaveVehicle);
+
+        databaseHelper = new DatabaseHelper(this);
 
         String[] fuelTypes = {
                 "Petrol", "Diesel", "Hybrid", "Electric"
@@ -45,24 +48,70 @@ public class AddVehicleActivity extends AppCompatActivity {
 
         spFuelType.setAdapter(adapter);
 
-        btnSaveVehicle.setOnClickListener(v -> {
-            String carName = etCarName.getText().toString().trim();
-            String registration = etRegistration.getText().toString().trim();
-            String model = etModel.getText().toString().trim();
-            String year = etYear.getText().toString().trim();
+        btnSaveVehicle.setOnClickListener(v -> saveVehicle());
+    }
 
-            if (carName.isEmpty() || registration.isEmpty()
-                    || model.isEmpty() || year.isEmpty()) {
+    private void saveVehicle() {
 
+        String carName = etCarName.getText().toString().trim();
+        String registration = etRegistration.getText()
+                .toString().trim().toUpperCase();
+        String model = etModel.getText().toString().trim();
+        String yearText = etYear.getText().toString().trim();
+
+        String fuelType = spFuelType.getSelectedItem().toString();
+
+        // Check empty fields
+        if (carName.isEmpty() || registration.isEmpty()
+                || model.isEmpty() || yearText.isEmpty()) {
+
+            Toast.makeText(this,
+                    "Please fill in all fields",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int year;
+
+        try {
+            year = Integer.parseInt(yearText);
+
+            if (year < 1886 || year > 2026) {
                 Toast.makeText(this,
-                        "Please fill in all fields",
+                        "Please enter a valid manufacturing year",
                         Toast.LENGTH_SHORT).show();
-
-            } else {
-                Toast.makeText(this,
-                        "Vehicle details entered successfully!",
-                        Toast.LENGTH_SHORT).show();
+                return;
             }
-        });
+
+        } catch (NumberFormatException e) {
+            Toast.makeText(this,
+                    "Please enter a valid year",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Save vehicle into SQLite database
+        boolean isInserted = databaseHelper.insertVehicle(
+                carName,
+                registration,
+                model,
+                year,
+                fuelType
+        );
+
+        if (isInserted) {
+
+            Toast.makeText(this,
+                    "Vehicle saved successfully!",
+                    Toast.LENGTH_SHORT).show();
+
+            finish();
+
+        } else {
+
+            Toast.makeText(this,
+                    "Unable to save vehicle. Registration number may already exist.",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 }
