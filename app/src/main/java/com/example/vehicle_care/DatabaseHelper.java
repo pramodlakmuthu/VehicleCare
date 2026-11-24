@@ -3,6 +3,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.Cursor;
+import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -61,4 +63,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return result != -1;
     }
+
+    public ArrayList<String> getAllVehicles() {
+
+        ArrayList<String> vehicleList = new ArrayList<>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT * FROM vehicles ORDER BY id DESC",
+                null
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                String carName = cursor.getString(1);
+                String registration = cursor.getString(2);
+                String model = cursor.getString(3);
+                String year = cursor.getString(4);
+                String fuelType = cursor.getString(5);
+
+                String vehicleDetails =
+                        carName + "\n" +
+                                "Registration: " + registration + "\n" +
+                                "Model: " + model + "\n" +
+                                "Year: " + year + "\n" +
+                                "Fuel: " + fuelType;
+
+                vehicleList.add(vehicleDetails);
+
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        return vehicleList;
+    }
+
 }
