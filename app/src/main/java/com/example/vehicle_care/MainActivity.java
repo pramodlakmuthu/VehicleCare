@@ -15,6 +15,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Button btnAddVehicle;
     private LinearLayout vehicleContainer;
+    private LinearLayout btnServiceHistory;
+
     private DatabaseHelper databaseHelper;
 
     @Override
@@ -24,13 +26,24 @@ public class MainActivity extends AppCompatActivity {
 
         btnAddVehicle = findViewById(R.id.btnAddVehicle);
         vehicleContainer = findViewById(R.id.vehicleContainer);
+        btnServiceHistory = findViewById(R.id.btnServiceHistory);
 
         databaseHelper = new DatabaseHelper(this);
 
+        // Open Add Vehicle screen
         btnAddVehicle.setOnClickListener(v -> {
             Intent intent = new Intent(
                     MainActivity.this,
                     AddVehicleActivity.class
+            );
+            startActivity(intent);
+        });
+
+        // Open Service History screen
+        btnServiceHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    ServiceHistoryActivity.class
             );
             startActivity(intent);
         });
@@ -72,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 vehicleText.setText(vehicle);
                 vehicleText.setTextSize(16);
                 vehicleText.setPadding(20, 20, 20, 20);
+
                 vehicleText.setBackgroundResource(
                         android.R.drawable.dialog_holo_light_frame
                 );

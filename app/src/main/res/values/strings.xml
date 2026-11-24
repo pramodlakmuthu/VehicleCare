@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Vehicle_Care</string>
+    <string name="service_description_hint">Enter service description</string>
 </resources>
