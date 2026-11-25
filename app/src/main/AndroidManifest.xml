@@ -14,6 +14,7 @@
 
         <activity android:name=".AddVehicleActivity" />
         <activity android:name=".ServiceHistoryActivity" />
+        <activity android:name=".MaintenanceRemindersActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

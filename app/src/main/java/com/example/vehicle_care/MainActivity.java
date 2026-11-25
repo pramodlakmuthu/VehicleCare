@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnAddVehicle;
     private LinearLayout vehicleContainer;
     private LinearLayout btnServiceHistory;
+    private LinearLayout btnMaintenanceReminders;
 
     private DatabaseHelper databaseHelper;
 
@@ -27,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
         btnAddVehicle = findViewById(R.id.btnAddVehicle);
         vehicleContainer = findViewById(R.id.vehicleContainer);
         btnServiceHistory = findViewById(R.id.btnServiceHistory);
+        btnMaintenanceReminders =
+                findViewById(R.id.btnMaintenanceReminders);
 
         databaseHelper = new DatabaseHelper(this);
 
@@ -44,6 +47,15 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(
                     MainActivity.this,
                     ServiceHistoryActivity.class
+            );
+            startActivity(intent);
+        });
+
+        // Open Maintenance Reminders screen
+        btnMaintenanceReminders.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    MaintenanceRemindersActivity.class
             );
             startActivity(intent);
         });
