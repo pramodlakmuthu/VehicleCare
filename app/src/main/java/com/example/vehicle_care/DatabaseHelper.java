@@ -12,10 +12,11 @@ import java.util.ArrayList;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "vehiclecare.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     private static final String TABLE_VEHICLES = "vehicles";
     private static final String TABLE_SERVICES = "service_records";
+    private static final String TABLE_REMINDERS = "maintenance_reminders";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -42,8 +43,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createVehiclesTable);
 
         createServiceTable(db);
+        createReminderTable(db);
     }
 
+    // Create service history table
     private void createServiceTable(SQLiteDatabase db) {
 
         String createServicesTable =
@@ -60,6 +63,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createServicesTable);
     }
 
+    // Create maintenance reminders table
+    private void createReminderTable(SQLiteDatabase db) {
+
+        String createReminderTable =
+                "CREATE TABLE maintenance_reminders (" +
+                        "reminder_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "vehicle_id INTEGER, " +
+                        "reminder_title TEXT, " +
+                        "reminder_date TEXT, " +
+                        "reminder_description TEXT, " +
+                        "FOREIGN KEY(vehicle_id) REFERENCES vehicles(id) " +
+                        "ON DELETE CASCADE)";
+
+        db.execSQL(createReminderTable);
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db,
                           int oldVersion,
@@ -67,6 +86,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (oldVersion < 2) {
             createServiceTable(db);
+        }
+
+        if (oldVersion < 3) {
+            createReminderTable(db);
         }
     }
 
@@ -129,7 +152,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return vehicleList;
     }
 
-    // Get vehicle names for service screen
+    // Get vehicle names
     public ArrayList<String> getVehicleNames() {
 
         ArrayList<String> vehicleNames = new ArrayList<>();
@@ -200,6 +223,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return result != -1;
     }
+
     // Get all service records
     public ArrayList<String> getAllServiceRecords() {
 
@@ -245,4 +269,69 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return serviceList;
     }
+
+    // Insert maintenance reminder
+    public boolean insertReminder(int vehicleId,
+                                  String title,
+                                  String date,
+                                  String description) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put("vehicle_id", vehicleId);
+        values.put("reminder_title", title);
+        values.put("reminder_date", date);
+        values.put("reminder_description", description);
+
+        long result = db.insert(TABLE_REMINDERS, null, values);
+
+        return result != -1;
+    }
+
+    // Get all maintenance reminders
+    public ArrayList<String> getAllReminders() {
+
+        ArrayList<String> reminderList = new ArrayList<>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT vehicles.car_name, " +
+                        "vehicles.registration, " +
+                        "maintenance_reminders.reminder_title, " +
+                        "maintenance_reminders.reminder_date, " +
+                        "maintenance_reminders.reminder_description " +
+                        "FROM maintenance_reminders " +
+                        "INNER JOIN vehicles " +
+                        "ON maintenance_reminders.vehicle_id = vehicles.id " +
+                        "ORDER BY maintenance_reminders.reminder_id DESC",
+                null
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                String carName = cursor.getString(0);
+                String registration = cursor.getString(1);
+                String title = cursor.getString(2);
+                String date = cursor.getString(3);
+                String description = cursor.getString(4);
+
+                String reminderDetails =
+                        carName + " (" + registration + ")\n" +
+                                "Reminder: " + title + "\n" +
+                                "Date: " + date + "\n" +
+                                "Description: " + description;
+
+                reminderList.add(reminderDetails);
+
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        return reminderList;
+    }
+
 }
